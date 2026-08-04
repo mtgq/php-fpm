@@ -6,6 +6,21 @@ ARG PHP_VERSION
 # Set Environment Variables
 ENV DEBIAN_FRONTEND=noninteractive
 
+# Install the PHP bcmath extension
+RUN docker-php-ext-install bcmath
+
+# Install for image manipulation
+RUN docker-php-ext-install exif
+
+# Install the PHP pcntl extention
+RUN docker-php-ext-install pcntl
+
+# Install the PHP pdo_mysql extention
+RUN docker-php-ext-install pdo_mysql
+
+# Install the PHP mysqli extention
+RUN docker-php-ext-install mysqli
+
 COPY --from=mlocati/php-extension-installer /usr/bin/install-php-extensions /usr/local/bin/
 
 ###########################################################################
@@ -13,21 +28,17 @@ COPY --from=mlocati/php-extension-installer /usr/bin/install-php-extensions /usr
 ###########################################################################
 
 RUN install-php-extensions @fix_letsencrypt @composer \
-    bcmath \
     event \
+    sockets \
     intl \
     imagick \
     gd \
     gettext \
     mcrypt \
-    mysqli \
-    pdo_mysql \
     pcntl \
     redis \
-    sockets \
     swoole \
     zip
-
 
 ###########################################################################
 # PHP Basic Config
@@ -45,19 +56,6 @@ ARG TZ=Asia/Shanghai
 ENV TZ=${TZ}
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-###########################################################################
-# xlswriter:
-###########################################################################
-
-ARG INSTALL_XLSWRITER=true
-RUN set -eux; \
-    if [ ${INSTALL_XLSWRITER} = true ]; then \
-      # Install Php xlswriter Extension \
-      if [ $(php -r "echo PHP_MAJOR_VERSION;") != "5" ]; then \
-          install-php-extensions xlswriter  && \
-          php -m | grep -q 'xlswriter'; \
-      else \
-          echo "PHP Extension for xlswriter is not supported for PHP 5.0";\
-      fi \
-    ;fi
+# php 5.6 以后版本才支持
+RUN install-php-extensions xlswriter
 
