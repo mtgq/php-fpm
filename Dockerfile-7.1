@@ -39,6 +39,7 @@ COPY --from=mlocati/php-extension-installer /usr/bin/install-php-extensions /usr
 ###########################################################################
 
 RUN install-php-extensions @fix_letsencrypt @composer \
+    mcrypt \
     event \
     sockets \
     intl \
