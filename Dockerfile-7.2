@@ -17,6 +17,12 @@ RUN echo 'Acquire::Check-Valid-Until "false";' > /etc/apt/apt.conf.d/99insecure 
     && echo 'Acquire::AllowDowngradeToInsecureRepositories "true";' >> /etc/apt/apt.conf.d/99insecure \
     && echo 'APT::Get::AllowUnauthenticated "true";' >> /etc/apt/apt.conf.d/99insecure
 
+# Download MPL-licensed CA Bundle from curl.se
+RUN mkdir -p /etc/ssl/certs && \
+    curl -fsSL https://curl.se/ca/cacert.pem -o /etc/ssl/certs/cacert.pem && \
+    echo "curl.cainfo = /etc/ssl/certs/cacert.pem" > /usr/local/etc/php/conf.d/curl.ini && \
+    echo "openssl.cafile = /etc/ssl/certs/cacert.pem" > /usr/local/etc/php/conf.d/openssl.ini
+
 # Install the PHP bcmath extension
 RUN docker-php-ext-install bcmath
 
@@ -62,8 +68,7 @@ COPY ./custom.pool.conf /usr/local/etc/php-fpm.d/
 # Set Timezone
 ###########################################################################
 
-ARG TZ=Asia/Shanghai
-ENV TZ=${TZ}
+ENV TZ=Asia/Shanghai
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 # php 5.6 以后版本才支持
