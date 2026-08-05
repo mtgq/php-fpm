@@ -43,13 +43,6 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Login to Aliyun ACR
-        uses: docker/login-action@v4
-        with:
-          registry: ${{ vars.ALIYUN_REGISTRY }}
-          username: ${{ secrets.ALIYUN_USERNAME }}
-          password: ${{ secrets.ALIYUN_PASSWORD }}
-
       - name: Build and push
         uses: docker/build-push-action@v7
         with:
@@ -57,15 +50,3 @@ jobs:
           platforms: linux/amd64, linux/arm64
           push: ${{ (github.event_name != 'pull_request') && (github.repository == 'qurge/php-fpm') && (github.ref == 'refs/heads/main') }}
           tags: ${{ steps.meta.outputs.tags }}
-
-      - name: Sync image to Aliyun ACR
-        shell: bash
-        env:
-          ALIYUN_REGISTRY: ${{ vars.ALIYUN_REGISTRY }}
-          ALIYUN_NAMESPACE: ${{ vars.ALIYUN_NAMESPACE }}
-          ALIYUN_IMAGE: ${{ vars.ALIYUN_IMAGE }}
-        run: |
-          aliyun_image_name="${ALIYUN_IMAGE:-php-fpm}"
-          docker pull "${DOCKERHUB_IMAGE}:latest-${{ matrix.php_version }}"
-          docker tag "${DOCKERHUB_IMAGE}:latest-${{ matrix.php_version }}" "${ALIYUN_REGISTRY}/${ALIYUN_NAMESPACE}/${aliyun_image_name}:latest-${{ matrix.php_version }}"
-          docker push "${ALIYUN_REGISTRY}/${ALIYUN_NAMESPACE}/${aliyun_image_name}:latest-${{ matrix.php_version }}"
