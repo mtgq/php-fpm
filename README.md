@@ -6,6 +6,8 @@
 
 本镜像仓库地址 [Docker Hub Repository](https://hub.docker.com/r/qurge/php-fpm/)
 
+## 注意事项
+
 - `event` 和 `sockets` 需要搭配使用
 - `mcrypt` 建议 php7.2 以下安装
 

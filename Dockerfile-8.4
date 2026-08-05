@@ -1,16 +1,16 @@
-ARG PHP_VERSION=8.4
-FROM php:${PHP_VERSION}-fpm
+ARG LARADOCK_PHP_VERSION=8.4
+FROM php:${LARADOCK_PHP_VERSION}-fpm
 
-ARG PHP_VERSION
+ARG LARADOCK_PHP_VERSION
 
 # Set Environment Variables
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Download MPL-licensed CA Bundle from curl.se
-RUN mkdir -p /etc/ssl/certs && \
-    curl -fsSL https://curl.se/ca/cacert.pem -o /etc/ssl/certs/cacert.pem && \
-    echo "curl.cainfo = /etc/ssl/certs/cacert.pem" > /usr/local/etc/php/conf.d/curl.ini && \
-    echo "openssl.cafile = /etc/ssl/certs/cacert.pem" > /usr/local/etc/php/conf.d/openssl.ini
+RUN mkdir -p /usr/local/etc/php/ssl && \
+    curl -fsSL https://curl.se/ca/cacert.pem -o /usr/local/etc/php/ssl/php-custom-ca.pem && \
+    echo "curl.cainfo = /usr/local/etc/php/ssl/php-custom-ca.pem" > /usr/local/etc/php/conf.d/curl.ini && \
+    echo "openssl.cafile = /usr/local/etc/php/ssl/php-custom-ca.pem" > /usr/local/etc/php/conf.d/openssl.ini
 
 # Install the PHP bcmath extension
 RUN docker-php-ext-install bcmath
@@ -40,7 +40,11 @@ RUN install-php-extensions @fix_letsencrypt @composer \
     imagick \
     gd \
     gettext \
-    pcntl \
+    gmp \
+    ldap \
+    soap \
+    pdo_pgsql \
+    pgsql \
     redis \
     swoole \
     zip
@@ -49,9 +53,9 @@ RUN install-php-extensions @fix_letsencrypt @composer \
 # PHP Basic Config
 ###########################################################################
 
-COPY ./ini/php${PHP_VERSION}.ini /usr/local/etc/php/php.ini
-COPY ./custom.ini /usr/local/etc/php/conf.d
-COPY ./custom.pool.conf /usr/local/etc/php-fpm.d/
+COPY ./ini/php${LARADOCK_PHP_VERSION}.ini /usr/local/etc/php/php.ini
+COPY ./laravel.ini /usr/local/etc/php/conf.d
+COPY ./xlaravel.pool.conf /usr/local/etc/php-fpm.d/
 
 ###########################################################################
 # Set Timezone
