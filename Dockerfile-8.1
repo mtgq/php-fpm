@@ -1,31 +1,17 @@
-ARG LARADOCK_PHP_VERSION=8.2
-FROM php:${LARADOCK_PHP_VERSION}-fpm
-
-ARG LARADOCK_PHP_VERSION
+FROM php:8.1-fpm
 
 # Set Environment Variables
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Download MPL-licensed CA Bundle from curl.se
-RUN mkdir -p /usr/local/etc/php/ssl && \
-    curl -fsSL https://curl.se/ca/cacert.pem -o /usr/local/etc/php/ssl/php-custom-ca.pem && \
-    echo "curl.cainfo = /usr/local/etc/php/ssl/php-custom-ca.pem" > /usr/local/etc/php/conf.d/curl.ini && \
-    echo "openssl.cafile = /usr/local/etc/php/ssl/php-custom-ca.pem" > /usr/local/etc/php/conf.d/openssl.ini
-
-# Install the PHP bcmath extension
-RUN docker-php-ext-install bcmath
-
-# Install for image manipulation
-RUN docker-php-ext-install exif
-
-# Install the PHP pcntl extention
-RUN docker-php-ext-install pcntl
-
-# Install the PHP pdo_mysql extention
-RUN docker-php-ext-install pdo_mysql
-
-# Install the PHP mysqli extention
-RUN docker-php-ext-install mysqli
+RUN set -eux; \
+    # Install the PHP bcmath extention
+    docker-php-ext-install bcmath; \
+    # Install the PHP pdo_mysql extention
+    docker-php-ext-install pdo_mysql mysqli; \
+    # Install the PHP exif extention
+    docker-php-ext-install exif; \
+    # Install the PHP pcntl extention
+    docker-php-ext-install pcntl;
 
 COPY --from=mlocati/php-extension-installer /usr/bin/install-php-extensions /usr/local/bin/
 
@@ -49,11 +35,17 @@ RUN install-php-extensions @fix_letsencrypt @composer \
     swoole \
     zip
 
+# Download MPL-licensed CA Bundle from curl.se
+RUN mkdir -p /usr/local/etc/php/ssl && \
+    curl -fsSL https://curl.se/ca/cacert.pem -o /usr/local/etc/php/ssl/php-custom-ca.pem && \
+    echo "curl.cainfo = /usr/local/etc/php/ssl/php-custom-ca.pem" > /usr/local/etc/php/conf.d/curl.ini && \
+    echo "openssl.cafile = /usr/local/etc/php/ssl/php-custom-ca.pem" > /usr/local/etc/php/conf.d/openssl.ini
+
 ###########################################################################
 # PHP Basic Config
 ###########################################################################
 
-COPY ./ini/php${LARADOCK_PHP_VERSION}.ini /usr/local/etc/php/php.ini
+COPY ./ini/php8.1.ini /usr/local/etc/php/php.ini
 COPY ./laravel.ini /usr/local/etc/php/conf.d
 COPY ./xlaravel.pool.conf /usr/local/etc/php-fpm.d/
 
