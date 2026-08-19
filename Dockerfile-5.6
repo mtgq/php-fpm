@@ -1,7 +1,15 @@
 FROM php:5.6-fpm
 
+ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
+RUN chmod +x /usr/local/bin/install-php-extensions
+
 # Set Environment Variables
 ENV DEBIAN_FRONTEND=noninteractive
+
+RUN echo 'Acquire::Check-Valid-Until "false";' > /etc/apt/apt.conf.d/99insecure \
+    && echo 'Acquire::AllowInsecureRepositories "true";' >> /etc/apt/apt.conf.d/99insecure \
+    && echo 'Acquire::AllowDowngradeToInsecureRepositories "true";' >> /etc/apt/apt.conf.d/99insecure \
+    && echo 'APT::Get::AllowUnauthenticated "true";' >> /etc/apt/apt.conf.d/99insecure
 
 RUN set -eux; \
     sed -i \
@@ -11,12 +19,11 @@ RUN set -eux; \
     /etc/apt/sources.list; \
     apt-get update; \
     apt-get upgrade -y; \
+    apt-get install -y --no-install-recommends \
+        vim \
+        git \
+        tzdata; \
     rm -rf /var/lib/apt/lists/*
-
-RUN echo 'Acquire::Check-Valid-Until "false";' > /etc/apt/apt.conf.d/99insecure \
-    && echo 'Acquire::AllowInsecureRepositories "true";' >> /etc/apt/apt.conf.d/99insecure \
-    && echo 'Acquire::AllowDowngradeToInsecureRepositories "true";' >> /etc/apt/apt.conf.d/99insecure \
-    && echo 'APT::Get::AllowUnauthenticated "true";' >> /etc/apt/apt.conf.d/99insecure
 
 RUN set -eux; \
     # Install the PHP bcmath extention
@@ -27,8 +34,6 @@ RUN set -eux; \
     docker-php-ext-install exif; \
     # Install the PHP pcntl extention
     docker-php-ext-install pcntl;
-
-COPY --from=mlocati/php-extension-installer /usr/bin/install-php-extensions /usr/local/bin/
 
 ###########################################################################
 # Install PHP extensions
@@ -53,9 +58,8 @@ RUN install-php-extensions @fix_letsencrypt @composer \
     zip
 
 # Download MPL-licensed CA Bundle from curl.se
-RUN mkdir -p /usr/local/etc/php/ssl && \
-    curl -fsSL https://curl.se/ca/cacert.pem -o /usr/local/etc/php/ssl/php-custom-ca.pem && \
-    echo "curl.cainfo = /usr/local/etc/php/ssl/php-custom-ca.pem" > /usr/local/etc/php/conf.d/curl.ini && \
+ADD https://curl.se/ca/cacert.pem /usr/local/etc/php/ssl/php-custom-ca.pem
+RUN echo "curl.cainfo = /usr/local/etc/php/ssl/php-custom-ca.pem" > /usr/local/etc/php/conf.d/curl.ini && \
     echo "openssl.cafile = /usr/local/etc/php/ssl/php-custom-ca.pem" > /usr/local/etc/php/conf.d/openssl.ini
 
 ###########################################################################
