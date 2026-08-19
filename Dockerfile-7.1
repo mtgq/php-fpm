@@ -42,6 +42,7 @@ RUN set -eux; \
 
 RUN install-php-extensions @fix_letsencrypt @composer \
     mcrypt \
+    # laradock 5.6 ~ 7.1 之间有此扩展，高版本没有，另外安装需要依赖，所以交给扩展安装
     event \
     sockets \
     intl \
