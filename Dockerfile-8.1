@@ -9,7 +9,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 #####################################
 # Composer:
 #####################################
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+COPY --from=composer /usr/bin/composer /usr/bin/composer
 ENV COMPOSER_HOME=/tmp/composer
 ENV COMPOSER_ALLOW_SUPERUSER=1
 
@@ -27,7 +27,8 @@ RUN set -eux; \
 # Install PHP extensions
 ###########################################################################
 
-RUN install-php-extensions @fix_letsencrypt \
+RUN install-php-extensions @fix_letsencrypt
+RUN install-php-extensions \
     event \
     sockets \
     intl \

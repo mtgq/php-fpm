@@ -29,7 +29,7 @@ RUN set -eux; \
 #####################################
 # Composer:
 #####################################
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+COPY --from=composer:2.2 /usr/bin/composer /usr/bin/composer
 ENV COMPOSER_HOME=/tmp/composer
 ENV COMPOSER_ALLOW_SUPERUSER=1
 
@@ -47,7 +47,8 @@ RUN set -eux; \
 # Install PHP extensions
 ###########################################################################
 
-RUN install-php-extensions @fix_letsencrypt \
+RUN install-php-extensions @fix_letsencrypt
+RUN install-php-extensions \
     mcrypt \
     # laradock 5.6 ~ 7.1 之间有此扩展，高版本没有，另外安装需要依赖，所以交给扩展安装
     event \
