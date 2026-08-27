@@ -9,5 +9,5 @@
 ## 注意事项
 
 - `event` 和 `sockets` 需要搭配使用
-- `mcrypt` 建议 php7.2 以下安装
+- `mcrypt` (_only PHP ≤ 7.1_)
 
