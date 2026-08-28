@@ -6,25 +6,12 @@ RUN chmod +x /usr/local/bin/install-php-extensions
 # Set Environment Variables
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN echo 'Acquire::Check-Valid-Until "false";' > /etc/apt/apt.conf.d/99insecure \
-    && echo 'Acquire::AllowInsecureRepositories "true";' >> /etc/apt/apt.conf.d/99insecure \
-    && echo 'Acquire::AllowDowngradeToInsecureRepositories "true";' >> /etc/apt/apt.conf.d/99insecure \
-    && echo 'APT::Get::AllowUnauthenticated "true";' >> /etc/apt/apt.conf.d/99insecure
-
 RUN set -eux; \
     sed -i \
     -e 's|deb.debian.org|archive.debian.org|g' \
     -e 's|security.debian.org|archive.debian.org|g' \
     -e '/buster-updates/d' \
-    /etc/apt/sources.list; \
-    apt-get update; \
-    apt-get upgrade -y; \
-    apt-get install -y --no-install-recommends \
-        curl \
-        vim \
-        git \
-        tzdata; \
-    rm -rf /var/lib/apt/lists/*
+    /etc/apt/sources.list;
 
 #####################################
 # Composer:
