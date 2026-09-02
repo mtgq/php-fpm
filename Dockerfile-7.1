@@ -53,16 +53,26 @@ RUN install-php-extensions \
     swoole \
     zip
 
-# Download MPL-licensed CA Bundle from curl.se
-ADD https://curl.se/ca/cacert.pem /usr/local/etc/php/ssl/php-custom-ca.pem
-RUN echo "curl.cainfo = /usr/local/etc/php/ssl/php-custom-ca.pem" > /usr/local/etc/php/conf.d/curl.ini && \
-    echo "openssl.cafile = /usr/local/etc/php/ssl/php-custom-ca.pem" > /usr/local/etc/php/conf.d/openssl.ini
-
 ###########################################################################
 # PHP Basic Config
 ###########################################################################
 
-COPY ./ini/php7.1.ini /usr/local/etc/php/php.ini
+# 配置参考 https://github.com/thecodingmachine/docker-images-php
+# 配置参考 https://github.com/aaPanel/BaoTa/blob/main/script/php_auto.sh
+
+ADD https://curl.se/ca/cacert.pem /usr/local/etc/php/ssl/php-custom-ca.pem
+RUN cp $PHP_INI_DIR/php.ini-development $PHP_INI_DIR/php.ini && \
+    sed -i 's/^disable_functions/;disable_functions/g' $PHP_INI_DIR/php.ini && \
+    sed -i 's/^memory_limit = .*/memory_limit = -1/g' $PHP_INI_DIR/php.ini && \
+    sed -i 's/;date.timezone =.*/date.timezone = PRC/g' $PHP_INI_DIR/php.ini && \
+    sed -i 's/short_open_tag =.*/short_open_tag = On/g' $PHP_INI_DIR/php.ini && \
+    sed -i 's/;cgi.fix_pathinfo=.*/cgi.fix_pathinfo=1/g' $PHP_INI_DIR/php.ini && \
+    sed -i 's/display_errors = Off/display_errors = On/g' $PHP_INI_DIR/php.ini && \
+    sed -i 's/error_reporting =.*/error_reporting = E_ALL \& \~E_NOTICE/g' $PHP_INI_DIR/php.ini && \
+    crtPath="/usr/local/etc/php/ssl/php-custom-ca.pem" && \
+    sed -i "s#;openssl.cafile=#openssl.cafile=${crtPath}#" $PHP_INI_DIR/php.ini && \
+    sed -i "s#;curl.cainfo =#curl.cainfo = ${crtPath}#" $PHP_INI_DIR/php.ini && \
+    sed -i 's/expose_php = On/expose_php = Off/g' $PHP_INI_DIR/php.ini
 COPY ./laravel.ini /usr/local/etc/php/conf.d
 COPY ./xlaravel.pool.conf /usr/local/etc/php-fpm.d/
 
